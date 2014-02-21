@@ -1,0 +1,38 @@
+#!/usr/bin/env zsh
+
+#==================
+# Config
+#==================
+
+NR_CPUS=4
+QUALITY=5
+
+#==================
+# End Config
+#==================
+
+autoload colors && colors
+
+count=0
+for d in *; do
+	if [[ ${d##* } == "FLAC" ]]; then
+		(
+			echo "$fg_bold[cyan]==> $fg_bold[green]Transcoding $d$reset_color"
+			# encode
+			oggenc -Q -q $QUALITY "$d"/*.flac
+
+			# # exit on error
+			[ $? -gt 0 ] && exit
+
+			# # mv files to new dir
+			rm "$d"/*.flac
+			mv "$d" "${d% *} OGG"
+		) &
+		let count+=1
+		[[ $((count%NR_CPUS)) -eq 0 ]] && wait
+	fi
+done && wait
+
+# delete empty dirs
+echo "$fg_bold[cyan]==> $fg_bold[green]Cleaning Up$reset_color"
+rm -d **/*(/^F)

@@ -1,0 +1,23 @@
+#!/usr/bin/env zsh
+
+original=${1}
+name=${original%%.*}
+
+# size=$(identify -verbose ${original} | grep Geometry | gsed -e 's/\s*Geometry:\s*\([0-9]*\).*/\1/')
+# if [[ ${size} -lt 1024 ]]; then
+# 	echo "Source image should be at least 1024x1024 pixels big."
+# 	echo "The image you are using seems to be too small."
+# 	echo "The image will be scaled up and look horrible."
+# 	echo "Should I continue? (Enter/Control-C)"
+# 	read
+# fi
+
+mkdir ${name}.iconset
+
+for i in 16 32 128 256 512; do
+	sips -z ${i} ${i} ${original} --out ${name}.iconset/icon_${i}x${i}.png
+	sips -z $((i*2)) $((i*2)) ${original} --out ${name}.iconset/icon_${i}x${i}@2x.png
+done
+
+iconutil -c icns ${name}.iconset
+rm -r ${name}.iconset
